@@ -10,17 +10,6 @@ Process:
 import numpy as np
 from sklearn.preprocessing import Normalizer
 
-normal = np.random.normal(size=(784, 1))
-normal = np.sort(normal, axis=0)
-
-max = np.amax(normal)
-min = np.amin(normal)
-new_normal = normal - min
-
-new_normal_max = np.amax(new_normal)
-
-print(new_normal / new_normal_max)
-
 def get_normal_shaped_array(shape):
     """Returns a normal shaped array.
 
