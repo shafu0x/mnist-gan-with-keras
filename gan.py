@@ -10,10 +10,22 @@ Process:
 import numpy as np
 from sklearn.preprocessing import Normalizer
 
+from discriminator import Discriminator
+import mnist
+
+# set to True to download and save the MNIST dataset.
+DOWNLOAD_MNIST = False
+
+if DOWNLOAD_MNIST:
+    X_train, y_train, X_test, y_test = mnist.init()
+else:
+    X_train, y_train, X_test, y_test = mnist.load()
+
 def get_normal_shaped_array(shape):
     """Returns a normal shaped array.
 
-    The elements of the array follow a normal distribution and are between [0,1].
+    The elements of the array follow a normal distribution and are between (0,1).
+
     Args:
         shape (tuple): The shape of the returned array.
 
@@ -42,4 +54,64 @@ def get_normal_shaped_array(shape):
 
     return normal_shaped
 
-print(get_normal_shaped_array((20, 1)))
+def get_normal_shaped_arrays(n_arrays, shape):
+    """Returns a number of normal shaped array.
+
+    The elements of one array follow a normal distribution and are between (0,1).
+
+    Args:
+        n_arrays (int): How many arrays.
+        shape (tuple): The shape of the returned array.
+
+    Returns:
+        normal_shaped (np.array): Array with arrays that are normal shaped.
+    """
+    normal_shaped = []
+
+    for _ in range(n_arrays):
+        normal_shaped.append(get_normal_shaped_array(shape))
+
+    return np.array(normal_shaped).reshape(n_arrays, shape[1])
+
+def get_discriminator_train_set(normal_shaped_data, mnist_data):
+    """Creates a training set of the same number of mnist data and normal shaped
+    data.
+
+    Args:
+        normal_shaped_data (np.array): Array with elements that are normal
+            shaped. (Shape=(None, 784))
+        mnist_data (np.array): The mnist training set.
+
+    Returns:
+        X (np.array): The images.
+        y (np.array): The labels.
+    """
+    X = []
+    y = []
+
+    for i in range(len(normal_shaped_data)):
+        X.append(normal_shaped_data[i])
+        y.append([1, 0])
+        X.append(mnist_data[i])
+        y.append([0, 1])
+
+    return np.array(X), np.array(y)
+
+X = get_normal_shaped_arrays(60000, (1, 784))
+
+X, y = get_discriminator_train_set(X, X_train)
+
+discriminator = Discriminator()
+discriminator.train(X, y)
+
+test_normal_shaped_arrays = get_normal_shaped_arrays(10000, (1, 784))
+X, y = get_discriminator_train_set(test_normal_shaped_arrays, X_test)
+evaluation = discriminator.eval(X, y)
+
+print(evaluation)
+
+print(discriminator.model.predict(get_normal_shaped_arrays(10, (1, 784))))
+
+print('###############')
+
+print(discriminator.model.predict(X_train[0:10]))
