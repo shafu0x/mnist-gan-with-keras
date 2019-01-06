@@ -16,6 +16,9 @@ import mnist
 # set to True to download and save the MNIST dataset.
 DOWNLOAD_MNIST = False
 
+DISCRIMINATOR_EPOCHS = 2
+DISCRIMINATOR_BATCH_SIZE = 128
+
 if DOWNLOAD_MNIST:
     X_train, y_train, X_test, y_test = mnist.init()
 else:
@@ -73,18 +76,22 @@ def get_normal_shaped_arrays(n_arrays, shape):
 
     return np.array(normal_shaped).reshape(n_arrays, shape[1])
 
-def get_discriminator_train_set(normal_shaped_data, mnist_data):
-    """Creates a training set of the same number of mnist data and normal shaped
-    data.
+def discriminator_train_test_set(normal_shaped_data, mnist_data, train_test_split):
+    """Creates a training and test set of the same number of mnist data and
+    normal shaped data.
 
     Args:
         normal_shaped_data (np.array): Array with elements that are normal
             shaped. (Shape=(None, 784))
         mnist_data (np.array): The mnist training set.
+        train_test_split (float): If 0.1 for example, 10% of the data is used
+            for testing.
 
     Returns:
-        X (np.array): The images.
-        y (np.array): The labels.
+        X_train (np.array): The training images.
+        y_train (np.array): The training labels.
+        X_test (np.array): The test images.
+        y_test (np.array): The test labels.
     """
     X = []
     y = []
@@ -95,23 +102,20 @@ def get_discriminator_train_set(normal_shaped_data, mnist_data):
         X.append(mnist_data[i])
         y.append([0, 1])
 
-    return np.array(X), np.array(y)
+    split = int(len(X) * train_test_split)
+
+    X_train = X[:-split]
+    y_train = y[:-split]
+
+    X_test = X[-split:]
+    y_test = y[-split:]
+
+    return np.array(X_train), np.array(y_train), np.array(X_test), np.array(y_test)
 
 X = get_normal_shaped_arrays(60000, (1, 784))
 
-X, y = get_discriminator_train_set(X, X_train)
+X_train, y_train, X_test, y_test = discriminator_train_test_set(X, X_train, 0.10)
 
-discriminator = Discriminator()
-discriminator.train(X, y)
-
-test_normal_shaped_arrays = get_normal_shaped_arrays(10000, (1, 784))
-X, y = get_discriminator_train_set(test_normal_shaped_arrays, X_test)
-evaluation = discriminator.eval(X, y)
-
-print(evaluation)
-
-print(discriminator.model.predict(get_normal_shaped_arrays(10, (1, 784))))
-
-print('###############')
-
-print(discriminator.model.predict(X_train[0:10]))
+discriminator = Discriminator(DISCRIMINATOR_BATCH_SIZE, DISCRIMINATOR_EPOCHS)
+discriminator.train(X_train, y_train)
+print(discriminator.eval(X_test, y_test))
