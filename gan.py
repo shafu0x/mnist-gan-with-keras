@@ -12,14 +12,9 @@ from sklearn.preprocessing import Normalizer
 
 from discriminator import Discriminator
 import mnist
+import params
 
-# set to True to download and save the MNIST dataset.
-DOWNLOAD_MNIST = False
-
-DISCRIMINATOR_EPOCHS = 2
-DISCRIMINATOR_BATCH_SIZE = 128
-
-if DOWNLOAD_MNIST:
+if params.DOWNLOAD_MNIST:
     X_train, y_train, X_test, y_test = mnist.init()
 else:
     X_train, y_train, X_test, y_test = mnist.load()
@@ -116,6 +111,6 @@ X = get_normal_shaped_arrays(60000, (1, 784))
 
 X_train, y_train, X_test, y_test = discriminator_train_test_set(X, X_train, 0.10)
 
-discriminator = Discriminator(DISCRIMINATOR_BATCH_SIZE, DISCRIMINATOR_EPOCHS)
+discriminator = Discriminator(params.DISCRIMINATOR_BATCH_SIZE, params.DISCRIMINATOR_EPOCHS)
 discriminator.train(X_train, y_train)
 print(discriminator.eval(X_test, y_test))
