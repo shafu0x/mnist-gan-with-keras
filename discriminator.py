@@ -4,16 +4,7 @@ from keras.layers import Dense
 import numpy as np
 from sklearn import preprocessing
 
-INPUT_LAYER = 784
-HIDDEN_LAYER_1 = 512
-HIDDEN_LAYER_2 = 216
-HIDDEN_LAYER_3 = 64
-HIDDEN_LAYER_4 = 32
-HIDDEN_LAYER_5 = 2
-
-OPTIMIZER = 'adam'
-LOSS_FUNCTION = 'kullback_leibler_divergence'
-ACTIVATION_FUNCTION = 'sigmoid'
+import params
 
 class Discriminator:
     """Discriminator.
@@ -23,7 +14,7 @@ class Discriminator:
     def __init__(self, batch_size=128, epochs=2):
         """Initializes a Sequential NN with the keras Sequential object.
         It takes as input one image from the MNIST dataset (shape=(None, 784))
-        and returns [0,1] if it thinks its from the MNIST dataset and [0,1] if
+        and returns [0,1] if it thinks its from the MNIST dataset and [1,0] if
         doesn't think so.
 
         Args:
@@ -35,13 +26,13 @@ class Discriminator:
         self.epochs = epochs
 
         self.model = Sequential()
-        self.model.add(Dense(units=HIDDEN_LAYER_1, activation=ACTIVATION_FUNCTION, input_dim=INPUT_LAYER))
-        self.model.add(Dense(units=HIDDEN_LAYER_2, activation=ACTIVATION_FUNCTION))
-        self.model.add(Dense(units=HIDDEN_LAYER_3, activation=ACTIVATION_FUNCTION))
-        self.model.add(Dense(units=HIDDEN_LAYER_4, activation=ACTIVATION_FUNCTION))
-        self.model.add(Dense(units=HIDDEN_LAYER_5, activation='softmax'))
+        self.model.add(Dense(units=params.DISCRIMINATOR_HIDDEN_LAYER_1, activation=params.DISCRIMINATOR_ACTIVATION, input_dim=params.DISCRIMINATOR_INPUT_LAYER))
+        self.model.add(Dense(units=params.DISCRIMINATOR_HIDDEN_LAYER_2, activation=params.DISCRIMINATOR_ACTIVATION))
+        self.model.add(Dense(units=params.DISCRIMINATOR_HIDDEN_LAYER_3, activation=params.DISCRIMINATOR_ACTIVATION))
+        self.model.add(Dense(units=params.DISCRIMINATOR_HIDDEN_LAYER_4, activation=params.DISCRIMINATOR_ACTIVATION))
+        self.model.add(Dense(units=params.DISCRIMINATOR_HIDDEN_LAYER_5, activation='softmax'))
 
-        self.model.compile(loss=LOSS_FUNCTION, optimizer=OPTIMIZER, metrics=['accuracy'])
+        self.model.compile(loss=params.DISCRIMINATOR_LOSS, optimizer=params.DISCRIMINATOR_OPTIMIZER, metrics=['accuracy'])
 
     def train(self, X, y, verbose=True):
         """Trains the NN.
@@ -127,3 +118,10 @@ class Discriminator:
 
 
         return sum(accuracy) / float(len(accuracy))
+
+    def get_layers(self):
+        """
+        Returns:
+            layers (list): Layers of the discriminator.
+        """
+        return self.model.layers
